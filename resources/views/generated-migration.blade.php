@@ -15,12 +15,16 @@ class {{ $class }} extends Migration
         Schema::create('{{ $table }}', function (Blueprint $table) {
 @foreach($columns as $name => $attributes){!! "            " . $attributes['command'] !!}
 @endforeach
+@if (count($indexes) > 0)
 
 @foreach($indexes as $name => $attributes){!! "            " . $attributes['command'] !!}
 @endforeach
+@endif
+@if (count($foreignKeys) > 0)
 
 @foreach($foreignKeys as $name => $attributes){!! "            " . $attributes['command'] !!}
 @endforeach
+@endif
         });
     }
 

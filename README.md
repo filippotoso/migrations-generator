@@ -23,7 +23,7 @@ This generator is very simple. It builds the migrations from the database and sa
 By default the generator doesn't create the models of Laravel's tables like jobs, cache, and so on. You can modify this behavior publishing the package resources and editing the config/migrations-generator.php file.
 
 ## Configuration
-
+ 
 You can publish the configuration file with the following command:
 
 ```

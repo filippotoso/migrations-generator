@@ -26,4 +26,28 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Soft Deletes
+    |--------------------------------------------------------------------------
+    |
+    | This parameter specifies a list of tables for which the generator will 
+    | include the soft delete column. You can set it as an array of tables
+    | or use '*' (the asterisk string) for all tables.
+    |
+     */
+    'soft_deletes' => '*',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Timestamps
+    |--------------------------------------------------------------------------
+    |
+    | This parameter specifies a list of tables for which the generator will 
+    | include the timestamps columns. You can set it as an array of tables
+    | or use '*' (the asterisk string) for all tables.
+    |
+     */
+    'timestamps' => '*',
+
 ];

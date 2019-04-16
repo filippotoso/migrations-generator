@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Database\Schema\Builder;
 
 use Doctrine\DBAL\Types\TimeType;
 use Doctrine\DBAL\Types\DateType;
@@ -205,6 +206,7 @@ class GenerateMigrations extends Command
             ];
 
             $autoIncrement = $column->getAutoincrement();
+            $precision = $column->getPrecision();
             $typeName = $column->getType()->getName();
             $unsigned = $column->getUnsigned();
             $length = $column->getLength();
@@ -249,11 +251,7 @@ class GenerateMigrations extends Command
             } elseif ($typeName == Type::BLOB) {
                 $current['type'] = 'binary';
             } elseif ($typeName == Type::BOOLEAN) {
-                if ($length == 1) {
-                    $current['type'] = 'boolean';
-                } else {
-                    $current['type'] = $unsigned ? 'unsignedTinyInteger' : 'tinyInteger';
-                }
+                $current['type'] = $unsigned ? 'unsignedTinyInteger' : 'boolean';
                 $current['unsigned'] = false;
             } elseif ($typeName == Type::STRING) {
                 if ($column->getFixed()) {
@@ -261,6 +259,9 @@ class GenerateMigrations extends Command
                 } else {
                     if ($length == 0) {
                         $current['type'] = 'longText';
+                        $current['length'] = null;
+                    } elseif (Builder::$defaultStringLength == $length) {
+                        $current['type'] = 'string';
                         $current['length'] = null;
                     } elseif ($length < 255) {
                         $current['type'] = 'string';
@@ -322,6 +323,22 @@ class GenerateMigrations extends Command
             }
 
             $results[$columnName] = $current;
+        }
+
+        $timestampsTables = config('migrations-generator.timestamps');
+        $timestampsTables = is_array($timestampsTables) ? $timestampsTables : (($timestampsTables == '*') ? [$table] : []);
+        if (!isset($results['timestamps']) && !isset($results['nullableTimestamps']) && (in_array($table, $timestampsTables))) {
+            $results['timestamps'] = array_merge($defaultResult, [
+                'type' => 'timestamps',
+            ]);
+        }
+
+        $softDeleteTables = config('migrations-generator.soft_deletes');
+        $softDeleteTables = is_array($softDeleteTables) ? $softDeleteTables : (($softDeleteTables == '*') ? [$table] : []);
+        if (!isset($results['softDeletes']) && (in_array($table, $softDeleteTables))) {
+            $results['softDeletes'] = array_merge($defaultResult, [
+                'type' => 'softDeletes',
+            ]);
         }
 
         foreach ($results as $columnName => &$columnAttr) {
@@ -516,10 +533,10 @@ class GenerateMigrations extends Command
             $localColumn = current($foreignKey->getLocalColumns());
             $referenceColumn = current($foreignKey->getForeignColumns());
             $foreignTable = $foreignKey->getForeignTableName();
-            $onDelete = $foreignKey->getOption('onDelete');
+            $onDelete = trim(strtolower($foreignKey->getOption('onDelete')));
 
             $command = sprintf('$table->foreign(\'%s\')->references(\'%s\')->on(\'%s\')', $localColumn, $referenceColumn, $foreignTable);
-            $command .= ($onDelete) ? sprintf('->onDelete(\'%s\')', strtolower($onDelete)) : '';
+            $command .= ($onDelete && ($onDelete != 'no action')) ? sprintf('->onDelete(\'%s\')', $onDelete) : '';
             $command .= ';';
 
             $results[$foreignKeyName] = [
@@ -551,7 +568,7 @@ class GenerateMigrations extends Command
                 $tables[] = $current;
             }
 
-            $limit++;
+            $limit--;
         }
 
         $results = array_merge($results, $tables);

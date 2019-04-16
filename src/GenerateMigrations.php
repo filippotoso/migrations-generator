@@ -557,25 +557,31 @@ class GenerateMigrations extends Command
 
     protected function sortTables($tables)
     {
-        $limit = 25 * count($tables);
+        $allTables = DB::connection($this->connection)->getDoctrineSchemaManager()->listTableNames();
 
-        $results = [];
+        $limit = 25 * count($allTables);
 
-        while (($limit > 0) && count($tables) > 0) {
+        $sorted = [];
 
-            $current = array_shift($tables);
+        while (($limit > 0) && count($allTables) > 0) {
 
-            $diff = array_diff($this->requiredTables[$current], $results);
+            $current = array_shift($allTables);
+
+            $requiredTables = isset($this->requiredTables[$current]) ? $this->requiredTables[$current] : [];
+
+            $diff = array_diff($requiredTables, $sorted);
             if (empty($diff)) {
-                $results[] = $current;
+                $sorted[] = $current;
             } else {
-                $tables[] = $current;
+                $allTables[] = $current;
             }
 
             $limit--;
         }
 
-        $results = array_merge($results, $tables);
+        $sorted = array_merge($sorted, $allTables);
+
+        $results = array_intersect($sorted, $tables);
 
         return $results;
 

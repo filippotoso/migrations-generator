@@ -372,7 +372,11 @@ class GenerateMigrations extends Command
                 } elseif (in_array($columnAttr['type'], ['decimal', 'unsignedDecimal', 'float'])) {
                     $columnAttr['command'] = sprintf('$table->%s(\'%s\', %d, %d)', $columnAttr['type'], $columnAttr['name'], $columnAttr['precision'], $columnAttr['scale']);
                 } elseif (in_array($columnAttr['type'], ['string', 'char'])) {
-                    $columnAttr['command'] = sprintf('$table->%s(\'%s\', %d)', $columnAttr['type'], $columnAttr['name'], $columnAttr['length']);
+                    if ($columnAttr['length']) {
+                        $columnAttr['command'] = sprintf('$table->%s(\'%s\', %d)', $columnAttr['type'], $columnAttr['name'], $columnAttr['length']);
+                    } else {
+                        $columnAttr['command'] = sprintf('$table->%s(\'%s\')', $columnAttr['type'], $columnAttr['name']);
+                    }
                 }
                 $columnAttr['command'] .= ($columnAttr['nullable']) ? '->nullable()' : '';
                 $columnAttr['command'] .= ';';
@@ -493,8 +497,8 @@ class GenerateMigrations extends Command
 
             $name = $index->getName();
 
-            $pattern = sprintf('#^%s_.*_index$#si', $table);
-            if (preg_match($pattern, $name)) {
+            $pattern = sprintf('#^(%s_.*_index|.*_FKIndex\d+)$#si', $table);
+            if (config('migrations-generator.automatic_index_names') || preg_match($pattern, $name)) {
                 $name = null;
             }
 

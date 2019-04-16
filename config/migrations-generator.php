@@ -50,4 +50,16 @@ return [
      */
     'timestamps' => '*',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Automatic Index Names
+    |--------------------------------------------------------------------------
+    |
+    | This parameter specifies if the generator has to use the index names in the
+    | database or let Laravel create then automatically. For long indexes 
+    | (with many columns) this could cause problems.
+    |
+     */
+    'automatic_index_names' => false,
+
 ];

@@ -8,4 +8,6 @@ return [
 
     'timestamps' => [],
 
+    'automatic_index_names' => false,
+
 ];

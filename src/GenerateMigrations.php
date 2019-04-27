@@ -344,11 +344,11 @@ class GenerateMigrations extends Command
         foreach ($results as $columnName => &$columnAttr) {
 
             if (in_array($columnAttr['type'], [
-                'timestamps', 'rememberToken', 'softDeletes'
+                'timestamps', 'rememberToken', 'softDeletes', 'nullableTimestamps',
             ])) {
                 $columnAttr['command'] = sprintf('$table->%s();', $columnAttr['type']);
             } elseif (in_array($columnAttr['type'], [
-                'morphs', 'nullableMorphs', 'nullableTimestamps',
+                'morphs', 'nullableMorphs',
                 'bigIncrements', 'increments', 'smallIncrements',
             ])) {
                 $columnAttr['command'] = sprintf('$table->%s(\'%s\');', $columnAttr['type'], $columnAttr['name']);

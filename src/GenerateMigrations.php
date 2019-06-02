@@ -333,6 +333,10 @@ class GenerateMigrations extends Command
             ]);
         }
 
+        if (isset($results['timestamps'])) {
+            unset($results['nullableTimestamps']);
+        }
+
         $softDeleteTables = config('migrations-generator.soft_deletes');
         $softDeleteTables = is_array($softDeleteTables) ? $softDeleteTables : (($softDeleteTables == '*') ? [$table] : []);
         if (!isset($results['softDeletes']) && (in_array($table, $softDeleteTables))) {

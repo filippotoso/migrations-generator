@@ -363,7 +363,8 @@ class GenerateMigrations extends Command
                 'unsignedBigInteger', 'unsignedInteger', 'unsignedSmallInteger', 'unsignedTinyInteger',
             ])) {
                 $columnAttr['command'] = sprintf('$table->%s(\'%s\')', $columnAttr['type'], $columnAttr['name']);
-                $columnAttr['command'] .= ($columnAttr['nullable']) ? '->nullable()' : '';
+                $columnAttr['command'] .= $this->getNullableAttribute($columnAttr);
+                $columnAttr['command'] .= $this->getDefaultAttribute($columnAttr);
                 $columnAttr['command'] .= ';';
             } elseif (in_array($columnAttr['type'], [
                 'timestamp', 'string', 'char',
@@ -382,13 +383,42 @@ class GenerateMigrations extends Command
                         $columnAttr['command'] = sprintf('$table->%s(\'%s\')', $columnAttr['type'], $columnAttr['name']);
                     }
                 }
-                $columnAttr['command'] .= ($columnAttr['nullable']) ? '->nullable()' : '';
+                $columnAttr['command'] .= $this->getNullableAttribute($columnAttr);
+                $columnAttr['command'] .= $this->getDefaultAttribute($columnAttr);
                 $columnAttr['command'] .= ';';
             }
 
         }
 
         return $results;
+
+    }
+
+    protected function getNullableAttribute($columnAttr)
+    {
+        return ($columnAttr['nullable']) ? '->nullable()' : '';
+    }
+
+    protected function getDefaultAttribute($columnAttr)
+    {
+
+        if (is_null($columnAttr['default'])) {
+            return '';
+        }
+
+        if (in_array($columnAttr['type'], [
+            'bigInteger', 'boolean', 'integer', 'longText', 'longText',
+            'mediumText', 'smallInteger', 'tinyInteger',
+            'unsignedBigInteger', 'unsignedInteger', 'unsignedSmallInteger', 'unsignedTinyInteger',
+            'decimal', 'unsignedDecimal', 'float',
+        ])) {
+            return sprintf('->default(%s)', $columnAttr['default']);
+        } elseif (in_array($columnAttr['type'], [
+            'string', 'char',
+            'binary', 'date', 'dateTime', 'text', 'time',
+        ])) {
+            return sprintf("->default('%s')", str_replace("'", "\'", $columnAttr['default']));
+        }
 
     }
 
